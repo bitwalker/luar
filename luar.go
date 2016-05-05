@@ -1326,3 +1326,26 @@ func Init() *lua.State {
 	})
 	return L
 }
+
+func InitWithAlloc(allocator lua.Alloc) *lua.State {
+	var L = lua.NewStateAlloc(allocator)
+	initializeProxies(L)
+	L.DoString(setup)
+	RawRegister(L, "luar", Map{
+		"map2table":   map2table,
+		"slice2table": slice2table,
+		"map":         makeMap,
+		"slice":       makeSlice,
+		"type":        proxyType,
+		"sub":         sliceSub,
+		"append":      sliceAppend,
+		"raw":         proxyRaw,
+		"null":        null,
+	})
+	Register(L, "luar", Map{
+		"value": reflect.ValueOf,
+	})
+    L.SetAllocf(allocator)
+	return L
+
+}
