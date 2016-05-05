@@ -1308,7 +1308,6 @@ end
 // can be used, Lua 5.2 style.
 func Init() *lua.State {
 	var L = lua.NewState()
-	L.OpenLibs()
 	initializeProxies(L)
 	L.DoString(setup)
 	RawRegister(L, "luar", Map{
