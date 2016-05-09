@@ -1327,8 +1327,8 @@ func Init() *lua.State {
 	return L
 }
 
-func InitWithAlloc(allocator lua.Alloc) *lua.State {
-	var L = lua.NewStateAlloc(allocator)
+func InitRestrictive(memlimit uint) *lua.State {
+	var L = lua.NewStateRestrictive(memlimit)
 	initializeProxies(L)
 	L.DoString(setup)
 	RawRegister(L, "luar", Map{
@@ -1345,7 +1345,6 @@ func InitWithAlloc(allocator lua.Alloc) *lua.State {
 	Register(L, "luar", Map{
 		"value": reflect.ValueOf,
 	})
-    L.SetAllocf(allocator)
 	return L
 
 }
