@@ -623,6 +623,13 @@ func GoToLua(L *lua.State, t reflect.Type, val reflect.Value, dontproxify bool) 
 	}
 	kind := t.Kind()
 
+    // do not wrap nils, if wrapped nils are required for some reason,
+    // just recompile with this block removed
+    if t == nullv.Type() {
+        L.PushNil()
+        return
+    }
+
 	// underlying type is 'primitive' ? wrap it as a proxy!
 	if isPrimitiveDerived(t, kind) != nil {
 		makeValueProxy(L, val, cINTERFACE_META)
