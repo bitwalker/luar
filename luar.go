@@ -623,12 +623,12 @@ func GoToLua(L *lua.State, t reflect.Type, val reflect.Value, dontproxify bool) 
 	}
 	kind := t.Kind()
 
-    // do not wrap nils, if wrapped nils are required for some reason,
-    // just recompile with this block removed
-    if t == nullv.Type() {
-        L.PushNil()
-        return
-    }
+	// do not wrap nils, if wrapped nils are required for some reason,
+	// just recompile with this block removed
+	if t == nullv.Type() {
+		L.PushNil()
+		return
+	}
 
 	// underlying type is 'primitive' ? wrap it as a proxy!
 	if isPrimitiveDerived(t, kind) != nil {
@@ -702,7 +702,11 @@ func GoToLua(L *lua.State, t reflect.Type, val reflect.Value, dontproxify bool) 
 
 // A wrapper of luaToGo that return reflect.Value
 func luaToGoValue(L *lua.State, t reflect.Type, idx int) reflect.Value {
-	return valueOf(LuaToGo(L, t, idx))
+	val := LuaToGo(L, t, idx)
+	if val == nil {
+		return valueOfNil(val)
+	}
+	return valueOf(val)
 }
 
 func cannotConvert(L *lua.State, idx int, msg string, kind reflect.Kind, t reflect.Type) {
