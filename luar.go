@@ -238,7 +238,7 @@ func provideType(t string) func(*lua.State) int {
 
 func proxy__tostring(L *lua.State) int {
 	obj, _ := valueOfProxy(L, 1)
-    L.PushString(fmt.Sprintf("%v", obj))
+	L.PushString(fmt.Sprintf("%v", obj))
 	return 1
 }
 
@@ -340,23 +340,23 @@ func map__pairs(L *lua.State) int {
 }
 
 func map__ipairs(L *lua.State) int {
-    m, _ := valueOfProxy(L, 1)
+	m, _ := valueOfProxy(L, 1)
 	keys := m.MapKeys()
-    idx := -1
-    n := m.Len()
-    iter := func(L *lua.State) int {
-        idx++
-        if idx == n {
-            L.PushNil()
-            return 1
-        }
-        GoToLua(L, nil, valueOf(idx+1), false) // report as 1-based index
-        val := m.MapIndex(keys[idx])
-        GoToLua(L, nil, val, false)
-        return 2
-    }
-    L.PushGoFunction(iter)
-    return 1
+	idx := -1
+	n := m.Len()
+	iter := func(L *lua.State) int {
+		idx++
+		if idx == n {
+			L.PushNil()
+			return 1
+		}
+		GoToLua(L, nil, valueOf(idx+1), false) // report as 1-based index
+		val := m.MapIndex(keys[idx])
+		GoToLua(L, nil, val, false)
+		return 2
+	}
+	L.PushGoFunction(iter)
+	return 1
 }
 
 func slice__ipairs(L *lua.State) int {
@@ -1344,14 +1344,14 @@ function ipairs(t)
 end
 local otype = type
 function type(t)
-		local ot = otype(t)
-		if ot == "userdata" then
-				local mt = getmetatable(t)
-				if mt and mt.__type then
-						return obj.__type
-				end
+	local ot = otype(t)
+	if ot == "userdata" then
+		local mt = getmetatable(t)
+		if mt and mt.__type then
+			return mt.__type(t)
 		end
-		return ot
+	end
+	return ot
 end
 `
 
