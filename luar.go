@@ -198,6 +198,7 @@ func initializeProxies(L *lua.State) {
 	L.SetMetaMethod("__len", slicemap__len)
 	L.SetMetaMethod("__ipairs", slice__ipairs)
 	L.SetMetaMethod("__pairs", slice__ipairs)
+	L.SetMetaMethod("__type", provideType("table"))
 	flagValue()
 	L.NewMetaTable(cMAP_META)
 	L.SetMetaMethod("__index", map__index)
@@ -205,6 +206,7 @@ func initializeProxies(L *lua.State) {
 	L.SetMetaMethod("__len", slicemap__len)
 	L.SetMetaMethod("__ipairs", map__ipairs)
 	L.SetMetaMethod("__pairs", map__pairs)
+	L.SetMetaMethod("__type", provideType("table"))
 	flagValue()
 	L.NewMetaTable(cSTRUCT_META)
 	L.SetMetaMethod("__index", struct__index)
@@ -225,6 +227,13 @@ func initializeProxies(L *lua.State) {
 	L.SetField(-2, "Recv")
 	L.SetField(-2, "__index")
 	flagValue()
+}
+
+func provideType(t string) func(*lua.State) int {
+	return func(L *lua.State) int {
+		L.PushString(t)
+		return 1
+	}
 }
 
 func proxy__tostring(L *lua.State) int {
@@ -1332,6 +1341,17 @@ function ipairs(t)
     else
         return oipairs(t)
     end
+end
+local otype = type
+function type(t)
+		local ot = otype(t)
+		if ot == "userdata" then
+				local mt = getmetatable(t)
+				if mt and mt.__type then
+						return obj.__type
+				end
+		end
+		return ot
 end
 `
 
