@@ -198,7 +198,8 @@ func initializeProxies(L *lua.State) {
 	L.SetMetaMethod("__len", slicemap__len)
 	L.SetMetaMethod("__ipairs", slice__ipairs)
 	L.SetMetaMethod("__pairs", slice__ipairs)
-	L.SetMetaMethod("__type", provideType("table"))
+	L.PushString("slice")
+	L.SetField(-2, "__type")
 	flagValue()
 	L.NewMetaTable(cMAP_META)
 	L.SetMetaMethod("__index", map__index)
@@ -206,7 +207,8 @@ func initializeProxies(L *lua.State) {
 	L.SetMetaMethod("__len", slicemap__len)
 	L.SetMetaMethod("__ipairs", map__ipairs)
 	L.SetMetaMethod("__pairs", map__pairs)
-	L.SetMetaMethod("__type", provideType("table"))
+	L.PushString("map")
+	L.SetField(-2, "__type")
 	flagValue()
 	L.NewMetaTable(cSTRUCT_META)
 	L.SetMetaMethod("__index", struct__index)
@@ -555,6 +557,9 @@ func CopySliceToTable(L *lua.State, vslice reflect.Value) int {
 			GoToLua(L, nil, v, true)
 			L.SetTable(-3)
 		}
+		L.GetMetaTable(-1)
+		L.PushString("slice")
+		L.SetField(-2, "__type")
 		return 1
 	} else {
 		L.PushNil()
@@ -577,6 +582,9 @@ func CopyMapToTable(L *lua.State, vmap reflect.Value) int {
 			GoToLua(L, nil, v, true)
 			L.SetTable(-3)
 		}
+		L.GetMetaTable(-1)
+		L.PushString("map")
+		L.SetField(-2, "__type")
 		return 1
 	} else {
 		L.PushNil()
@@ -933,7 +941,21 @@ func LuaToGo(L *lua.State, t reflect.Type, idx int) interface{} {
 				if istable {
 					// have to make an executive decision here: tables with non-zero
 					// length are assumed to be slices!
+					var tableType string
+					L.GetMetaTable(idx)
+					if !L.IsNil(-1) {
+						L.GetField(-1, "__type")
+						if !L.IsNil(-1) {
+							tableType = L.ToString(-1)
+						} else {
+							tableType = ""
+						}
+						L.Pop(1)
+					}
+					L.Pop(1)
 					if L.ObjLen(idx) > 0 {
+						value = CopyTableToSlice(L, nil, idx)
+					} else if tableType == "slice" {
 						value = CopyTableToSlice(L, nil, idx)
 					} else {
 						value = CopyTableToMap(L, nil, idx)
@@ -1348,7 +1370,7 @@ function type(t)
 	if ot == "userdata" then
 		local mt = getmetatable(t)
 		if mt and mt.__type then
-			return mt.__type(t)
+			return mt.__type
 		end
 	end
 	return ot
