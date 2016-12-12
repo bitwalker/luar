@@ -943,18 +943,19 @@ func LuaToGo(L *lua.State, t reflect.Type, idx int) interface{} {
 				if istable {
 					// have to make an executive decision here: tables with non-zero
 					// length are assumed to be slices!
-					var tableType string
-					L.GetMetaTable(idx)
-					if !L.IsNil(-1) {
-						L.GetField(-1, "__type")
+					tableType := ""
+					if hasMetaTable := L.GetMetaTable(idx); hasMetaTable {
 						if !L.IsNil(-1) {
-							tableType = L.ToString(-1)
-						} else {
-							tableType = ""
+							L.GetField(-1, "__type")
+							if !L.IsNil(-1) {
+								tableType = L.ToString(-1)
+							} else {
+								tableType = ""
+							}
+							L.Pop(1)
 						}
 						L.Pop(1)
 					}
-					L.Pop(1)
 					if tableType == "slice" {
 						value = CopyTableToSlice(L, nil, idx)
 					} else if tableType == "map" {
