@@ -557,10 +557,10 @@ func CopySliceToTable(L *lua.State, vslice reflect.Value) int {
 			GoToLua(L, nil, v, true)
 			L.SetTable(-3)
 		}
-		L.GetMetaTable(-1)
+		L.NewTable()
 		L.PushString("slice")
 		L.SetField(-2, "__type")
-		L.SetMetaTable(-1)
+		L.SetMetaTable(-2)
 		return 1
 	} else {
 		L.PushNil()
@@ -583,10 +583,10 @@ func CopyMapToTable(L *lua.State, vmap reflect.Value) int {
 			GoToLua(L, nil, v, true)
 			L.SetTable(-3)
 		}
-		L.GetMetaTable(-1)
+		L.NewTable()
 		L.PushString("map")
 		L.SetField(-2, "__type")
-		L.SetMetaTable(-1)
+		L.SetMetaTable(-2)
 		return 1
 	} else {
 		L.PushNil()
